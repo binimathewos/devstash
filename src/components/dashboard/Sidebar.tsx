@@ -1,0 +1,210 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import {
+  ChevronDown,
+  Code,
+  File,
+  FileText,
+  Image,
+  Link as LinkIcon,
+  type LucideIcon,
+  Settings,
+  Sparkles,
+  Star,
+  Terminal,
+} from "lucide-react";
+
+import { cn } from "@/lib/utils";
+import { collections, currentUser, itemTypes } from "@/lib/mock-data";
+
+// Maps the lucide icon names stored in mock data to their components.
+// Keeps things type-safe instead of indexing the whole lucide export.
+const TYPE_ICONS: Record<string, LucideIcon> = {
+  Code,
+  Sparkles,
+  Terminal,
+  FileText,
+  File,
+  Image,
+  Link: LinkIcon,
+};
+
+// Turns a type name ("Snippets") into its route slug ("snippets").
+function typeSlug(name: string) {
+  return name.toLowerCase();
+}
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .map((part) => part[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+interface SectionProps {
+  title: string;
+  children: React.ReactNode;
+}
+
+// Collapsible top-level section with a chevron header (Types, Collections).
+function Section({ title, children }: SectionProps) {
+  const [open, setOpen] = useState(true);
+
+  return (
+    <div className="px-3 py-2">
+      <button
+        type="button"
+        onClick={() => setOpen((value) => !value)}
+        className="flex w-full items-center justify-between px-2 py-1 text-xs font-medium tracking-wide text-muted-foreground uppercase"
+        aria-expanded={open}
+      >
+        {title}
+        <ChevronDown
+          className={cn("size-4 transition-transform", !open && "-rotate-90")}
+        />
+      </button>
+      {open && <div className="mt-1 flex flex-col gap-0.5">{children}</div>}
+    </div>
+  );
+}
+
+interface SidebarProps {
+  // Icon-only rail mode (desktop collapsed state).
+  collapsed?: boolean;
+  // Called whenever a link is followed, so the mobile drawer can close.
+  onNavigate?: () => void;
+}
+
+export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
+  const favoriteCollections = collections.filter((c) => c.isFavorite);
+  // No createdAt on collections yet, so "recent" is the rest in source order.
+  const recentCollections = collections.filter((c) => !c.isFavorite);
+
+  if (collapsed) {
+    return (
+      <div className="flex h-full flex-col">
+        <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto py-3">
+          {itemTypes.map((type) => {
+            const Icon = TYPE_ICONS[type.icon] ?? File;
+            return (
+              <Link
+                key={type.id}
+                href={`/items/${typeSlug(type.name)}`}
+                onClick={onNavigate}
+                title={type.name}
+                className="flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
+              >
+                <Icon className={cn("size-4", type.color)} />
+              </Link>
+            );
+          })}
+        </nav>
+
+        <div className="flex flex-col items-center gap-2 border-t border-border py-3">
+          <div
+            className="flex size-9 items-center justify-center rounded-full bg-muted text-sm font-medium"
+            title={currentUser.name}
+          >
+            {initials(currentUser.name)}
+          </div>
+          <button
+            type="button"
+            aria-label="Settings"
+            className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          >
+            <Settings className="size-4" />
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex h-full flex-col">
+      <nav className="flex-1 overflow-y-auto py-2">
+        <Section title="Types">
+          {itemTypes.map((type) => {
+            const Icon = TYPE_ICONS[type.icon] ?? File;
+            return (
+              <Link
+                key={type.id}
+                href={`/items/${typeSlug(type.name)}`}
+                onClick={onNavigate}
+                className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+              >
+                <Icon className={cn("size-4", type.color)} />
+                <span className="flex-1 truncate">{type.name}</span>
+                <span className="text-xs text-muted-foreground">{type.count}</span>
+              </Link>
+            );
+          })}
+        </Section>
+
+        <Section title="Collections">
+          {favoriteCollections.length > 0 && (
+            <>
+              <p className="px-2 pt-1 pb-0.5 text-[10px] font-medium tracking-wide text-muted-foreground/70 uppercase">
+                Favorites
+              </p>
+              {favoriteCollections.map((collection) => (
+                <Link
+                  key={collection.id}
+                  href={`/collections/${collection.id}`}
+                  onClick={onNavigate}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Star className="size-4 fill-yellow-500 text-yellow-500" />
+                  <span className="flex-1 truncate">{collection.name}</span>
+                </Link>
+              ))}
+            </>
+          )}
+
+          {recentCollections.length > 0 && (
+            <>
+              <p className="px-2 pt-2 pb-0.5 text-[10px] font-medium tracking-wide text-muted-foreground/70 uppercase">
+                Recent
+              </p>
+              {recentCollections.map((collection) => (
+                <Link
+                  key={collection.id}
+                  href={`/collections/${collection.id}`}
+                  onClick={onNavigate}
+                  className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
+                >
+                  <span className="flex-1 truncate">{collection.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {collection.itemCount}
+                  </span>
+                </Link>
+              ))}
+            </>
+          )}
+        </Section>
+      </nav>
+
+      <div className="flex items-center gap-3 border-t border-border p-3">
+        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
+          {initials(currentUser.name)}
+        </div>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{currentUser.name}</p>
+          <p className="truncate text-xs text-muted-foreground">
+            {currentUser.email}
+          </p>
+        </div>
+        <button
+          type="button"
+          aria-label="Settings"
+          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+        >
+          <Settings className="size-4" />
+        </button>
+      </div>
+    </div>
+  );
+}
