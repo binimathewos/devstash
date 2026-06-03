@@ -2,39 +2,11 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import {
-  ChevronDown,
-  Code,
-  File,
-  FileText,
-  Image,
-  Link as LinkIcon,
-  type LucideIcon,
-  Settings,
-  Sparkles,
-  Star,
-  Terminal,
-} from "lucide-react";
+import { ChevronDown, Settings, Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { collections, currentUser, itemTypes } from "@/lib/mock-data";
-
-// Maps the lucide icon names stored in mock data to their components.
-// Keeps things type-safe instead of indexing the whole lucide export.
-const TYPE_ICONS: Record<string, LucideIcon> = {
-  Code,
-  Sparkles,
-  Terminal,
-  FileText,
-  File,
-  Image,
-  Link: LinkIcon,
-};
-
-// Turns a type name ("Snippets") into its route slug ("snippets").
-function typeSlug(name: string) {
-  return name.toLowerCase();
-}
+import { typeIcon, typeSlug } from "@/lib/type-icons";
 
 function initials(name: string) {
   return name
@@ -89,7 +61,7 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
       <div className="flex h-full flex-col">
         <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto py-3">
           {itemTypes.map((type) => {
-            const Icon = TYPE_ICONS[type.icon] ?? File;
+            const Icon = typeIcon(type.icon);
             return (
               <Link
                 key={type.id}
@@ -128,7 +100,7 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
       <nav className="flex-1 overflow-y-auto py-2">
         <Section title="Types">
           {itemTypes.map((type) => {
-            const Icon = TYPE_ICONS[type.icon] ?? File;
+            const Icon = typeIcon(type.icon);
             return (
               <Link
                 key={type.id}
