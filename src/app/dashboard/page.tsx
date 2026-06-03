@@ -1,28 +1,28 @@
 import Link from "next/link";
 import { Pin } from "lucide-react";
 
-import { collections, items, itemTypes } from "@/lib/mock-data";
+import { items, itemTypes } from "@/lib/mock-data";
+import {
+  getCollectionStats,
+  getDashboardCollections,
+} from "@/lib/db/collections";
 import { StatsCards } from "@/components/dashboard/StatsCards";
-import { CollectionCard, type TypeBadge } from "@/components/dashboard/CollectionCard";
+import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
 
 const typeById = new Map(itemTypes.map((type) => [type.id, type]));
 
-// Distinct item-type badges for the items belonging to a collection,
-// shown along the bottom of each collection card.
-function typeBadgesFor(collectionId: string): TypeBadge[] {
-  const seen = new Set<string>();
-  const badges: TypeBadge[] = [];
-  for (const item of items) {
-    if (item.collectionId !== collectionId || seen.has(item.typeId)) continue;
-    seen.add(item.typeId);
-    const type = typeById.get(item.typeId);
-    if (type) badges.push({ icon: type.icon, color: type.color });
-  }
-  return badges;
-}
+// Data is read live from the DB, so render per-request instead of being
+// statically prerendered at build time.
+export const dynamic = "force-dynamic";
 
-export default function DashboardPage() {
+export default async function DashboardPage() {
+  const [collections, collectionStats] = await Promise.all([
+    getDashboardCollections(),
+    getCollectionStats(),
+  ]);
+
+  // Items remain on mock data for now — wired to the DB in a later feature.
   const pinnedItems = items.filter((item) => item.isPinned);
   const recentItems = [...items]
     .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
@@ -39,9 +39,9 @@ export default function DashboardPage() {
 
       <StatsCards
         totalItems={items.length}
-        totalCollections={collections.length}
+        totalCollections={collectionStats.total}
         favoriteItems={items.filter((item) => item.isFavorite).length}
-        favoriteCollections={collections.filter((c) => c.isFavorite).length}
+        favoriteCollections={collectionStats.favorites}
       />
 
       <section>
@@ -56,11 +56,7 @@ export default function DashboardPage() {
         </div>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {collections.map((collection) => (
-            <CollectionCard
-              key={collection.id}
-              collection={collection}
-              typeBadges={typeBadgesFor(collection.id)}
-            />
+            <CollectionCard key={collection.id} collection={collection} />
           ))}
         </div>
       </section>
