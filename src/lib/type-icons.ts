@@ -6,16 +6,18 @@ import {
   Link as LinkIcon,
   type LucideIcon,
   Sparkles,
+  StickyNote,
   Terminal,
 } from "lucide-react";
 
-// Maps the lucide icon names stored in mock data to their components.
+// Maps the lucide icon names stored in the DB / mock data to their components.
 // Keeps things type-safe instead of indexing the whole lucide export.
 export const TYPE_ICONS: Record<string, LucideIcon> = {
   Code,
   Sparkles,
   Terminal,
   FileText,
+  StickyNote,
   File,
   Image,
   Link: LinkIcon,
