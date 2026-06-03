@@ -13,6 +13,7 @@ export interface ItemType {
   id: string;
   name: string;
   icon: string; // lucide icon name
+  color: string; // tailwind text-color class for the icon
   isSystem: boolean;
   count: number; // number of items of this type (for sidebar)
 }
@@ -46,13 +47,13 @@ export const currentUser: User = {
 };
 
 export const itemTypes: ItemType[] = [
-  { id: "type_snippet", name: "Snippets", icon: "Code", isSystem: true, count: 24 },
-  { id: "type_prompt", name: "Prompts", icon: "Sparkles", isSystem: true, count: 18 },
-  { id: "type_command", name: "Commands", icon: "Terminal", isSystem: true, count: 15 },
-  { id: "type_note", name: "Notes", icon: "FileText", isSystem: true, count: 12 },
-  { id: "type_file", name: "Files", icon: "File", isSystem: true, count: 5 },
-  { id: "type_image", name: "Images", icon: "Image", isSystem: true, count: 3 },
-  { id: "type_url", name: "Links", icon: "Link", isSystem: true, count: 8 },
+  { id: "type_snippet", name: "Snippets", icon: "Code", color: "text-blue-500", isSystem: true, count: 24 },
+  { id: "type_prompt", name: "Prompts", icon: "Sparkles", color: "text-purple-500", isSystem: true, count: 18 },
+  { id: "type_command", name: "Commands", icon: "Terminal", color: "text-amber-500", isSystem: true, count: 15 },
+  { id: "type_note", name: "Notes", icon: "FileText", color: "text-yellow-500", isSystem: true, count: 12 },
+  { id: "type_file", name: "Files", icon: "File", color: "text-gray-400", isSystem: true, count: 5 },
+  { id: "type_image", name: "Images", icon: "Image", color: "text-green-500", isSystem: true, count: 3 },
+  { id: "type_url", name: "Links", icon: "Link", color: "text-cyan-500", isSystem: true, count: 8 },
 ];
 
 export const collections: Collection[] = [
