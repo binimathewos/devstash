@@ -9,6 +9,10 @@ import { currentUser } from "@/lib/mock-data";
 import type { SidebarItemType } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
 import { typeIcon, typeSlug } from "@/lib/type-icons";
+import { Badge } from "@/components/ui/badge";
+
+// Item types gated behind the Pro plan (file uploads).
+const PRO_TYPES = new Set(["file", "image"]);
 
 function initials(name: string) {
   return name
@@ -129,6 +133,14 @@ export function Sidebar({
                   style={type.color ? { color: type.color } : undefined}
                 />
                 <span className="flex-1 truncate">{typeLabel(type.name)}</span>
+                {PRO_TYPES.has(type.name) && (
+                  <Badge
+                    variant="outline"
+                    className="h-4 px-1.5 text-[9px] font-semibold tracking-wider text-muted-foreground"
+                  >
+                    PRO
+                  </Badge>
+                )}
                 <span className="text-xs text-muted-foreground">
                   {type.count}
                 </span>
