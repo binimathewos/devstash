@@ -1,32 +1,28 @@
 import Link from "next/link";
 import { Pin } from "lucide-react";
 
-import { items, itemTypes } from "@/lib/mock-data";
 import {
   getCollectionStats,
   getDashboardCollections,
 } from "@/lib/db/collections";
+import { getItemStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
-
-const typeById = new Map(itemTypes.map((type) => [type.id, type]));
 
 // Data is read live from the DB, so render per-request instead of being
 // statically prerendered at build time.
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
-  const [collections, collectionStats] = await Promise.all([
-    getDashboardCollections(),
-    getCollectionStats(),
-  ]);
-
-  // Items remain on mock data for now — wired to the DB in a later feature.
-  const pinnedItems = items.filter((item) => item.isPinned);
-  const recentItems = [...items]
-    .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-    .slice(0, 10);
+  const [collections, collectionStats, itemStats, pinnedItems, recentItems] =
+    await Promise.all([
+      getDashboardCollections(),
+      getCollectionStats(),
+      getItemStats(),
+      getPinnedItems(),
+      getRecentItems(),
+    ]);
 
   return (
     <div className="mx-auto flex max-w-6xl flex-col gap-8">
@@ -38,9 +34,9 @@ export default async function DashboardPage() {
       </div>
 
       <StatsCards
-        totalItems={items.length}
+        totalItems={itemStats.total}
         totalCollections={collectionStats.total}
-        favoriteItems={items.filter((item) => item.isFavorite).length}
+        favoriteItems={itemStats.favorites}
         favoriteCollections={collectionStats.favorites}
       />
 
@@ -69,7 +65,7 @@ export default async function DashboardPage() {
           </h2>
           <div className="flex flex-col gap-3">
             {pinnedItems.map((item) => (
-              <ItemRow key={item.id} item={item} type={typeById.get(item.typeId)} />
+              <ItemRow key={item.id} item={item} />
             ))}
           </div>
         </section>
@@ -79,7 +75,7 @@ export default async function DashboardPage() {
         <h2 className="mb-3 text-lg font-semibold">Recent Items</h2>
         <div className="flex flex-col gap-3">
           {recentItems.map((item) => (
-            <ItemRow key={item.id} item={item} type={typeById.get(item.typeId)} />
+            <ItemRow key={item.id} item={item} />
           ))}
         </div>
       </section>

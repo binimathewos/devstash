@@ -2,26 +2,28 @@ import { createElement } from "react";
 import Link from "next/link";
 import { Pin, Star } from "lucide-react";
 
-import { cn, formatShortDate } from "@/lib/utils";
-import type { Item, ItemType } from "@/lib/mock-data";
+import { formatShortDate } from "@/lib/utils";
+import type { DashboardItem } from "@/lib/db/items";
 import { typeIcon } from "@/lib/type-icons";
 
 interface ItemRowProps {
-  item: Item;
-  type: ItemType | undefined;
+  item: DashboardItem;
 }
 
 // A single item line used in the Pinned and Recent lists: type icon, title
 // (with pin/favorite markers), description, tags, and the created date.
-export function ItemRow({ item, type }: ItemRowProps) {
+export function ItemRow({ item }: ItemRowProps) {
   return (
     <Link
       href={`/items/detail/${item.id}`}
       className="flex gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-ring"
     >
       <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
-        {createElement(typeIcon(type?.icon ?? "File"), {
-          className: cn("size-4", type?.color),
+        {createElement(typeIcon(item.typeIcon), {
+          className: "size-4",
+          // Inline style: the type color is a per-type hex value from the DB,
+          // so it can't be expressed as a static Tailwind class.
+          style: item.typeColor ? { color: item.typeColor } : undefined,
         })}
       </div>
 
@@ -36,9 +38,11 @@ export function ItemRow({ item, type }: ItemRowProps) {
           )}
         </div>
 
-        <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
-          {item.description}
-        </p>
+        {item.description && (
+          <p className="mt-0.5 line-clamp-1 text-sm text-muted-foreground">
+            {item.description}
+          </p>
+        )}
 
         {item.tags.length > 0 && (
           <div className="mt-2 flex flex-wrap gap-1.5">
