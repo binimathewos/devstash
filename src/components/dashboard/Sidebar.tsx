@@ -5,7 +5,9 @@ import Link from "next/link";
 import { ChevronDown, Settings, Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { collections, currentUser, itemTypes } from "@/lib/mock-data";
+import { currentUser } from "@/lib/mock-data";
+import type { SidebarItemType } from "@/lib/db/items";
+import type { SidebarCollection } from "@/lib/db/collections";
 import { typeIcon, typeSlug } from "@/lib/type-icons";
 
 function initials(name: string) {
@@ -15,6 +17,11 @@ function initials(name: string) {
     .slice(0, 2)
     .join("")
     .toUpperCase();
+}
+
+// DB type names are singular and lowercase ("snippet"); show them capitalized.
+function typeLabel(name: string) {
+  return name.charAt(0).toUpperCase() + name.slice(1);
 }
 
 interface SectionProps {
@@ -45,15 +52,21 @@ function Section({ title, children }: SectionProps) {
 }
 
 interface SidebarProps {
+  itemTypes: SidebarItemType[];
+  collections: SidebarCollection[];
   // Icon-only rail mode (desktop collapsed state).
   collapsed?: boolean;
   // Called whenever a link is followed, so the mobile drawer can close.
   onNavigate?: () => void;
 }
 
-export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
+export function Sidebar({
+  itemTypes,
+  collections,
+  collapsed = false,
+  onNavigate,
+}: SidebarProps) {
   const favoriteCollections = collections.filter((c) => c.isFavorite);
-  // No createdAt on collections yet, so "recent" is the rest in source order.
   const recentCollections = collections.filter((c) => !c.isFavorite);
 
   if (collapsed) {
@@ -67,10 +80,13 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
                 key={type.id}
                 href={`/items/${typeSlug(type.name)}`}
                 onClick={onNavigate}
-                title={type.name}
+                title={typeLabel(type.name)}
                 className="flex size-9 items-center justify-center rounded-md text-muted-foreground hover:bg-accent"
               >
-                <Icon className={cn("size-4", type.color)} />
+                <Icon
+                  className="size-4"
+                  style={type.color ? { color: type.color } : undefined}
+                />
               </Link>
             );
           })}
@@ -108,9 +124,14 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
                 onClick={onNavigate}
                 className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
               >
-                <Icon className={cn("size-4", type.color)} />
-                <span className="flex-1 truncate">{type.name}</span>
-                <span className="text-xs text-muted-foreground">{type.count}</span>
+                <Icon
+                  className="size-4"
+                  style={type.color ? { color: type.color } : undefined}
+                />
+                <span className="flex-1 truncate">{typeLabel(type.name)}</span>
+                <span className="text-xs text-muted-foreground">
+                  {type.count}
+                </span>
               </Link>
             );
           })}
@@ -148,6 +169,15 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
                   onClick={onNavigate}
                   className="flex items-center gap-2 rounded-md px-2 py-1.5 text-sm hover:bg-accent hover:text-accent-foreground"
                 >
+                  {/* Colored dot = the collection's most-used item type. */}
+                  <span
+                    className="size-2.5 shrink-0 rounded-full bg-muted-foreground/40"
+                    style={
+                      collection.accentColor
+                        ? { backgroundColor: collection.accentColor }
+                        : undefined
+                    }
+                  />
                   <span className="flex-1 truncate">{collection.name}</span>
                   <span className="text-xs text-muted-foreground">
                     {collection.itemCount}
@@ -156,6 +186,14 @@ export function Sidebar({ collapsed = false, onNavigate }: SidebarProps) {
               ))}
             </>
           )}
+
+          <Link
+            href="/collections"
+            onClick={onNavigate}
+            className="mt-1 flex items-center rounded-md px-2 py-1.5 text-xs text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+          >
+            View all collections
+          </Link>
         </Section>
       </nav>
 
