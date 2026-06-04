@@ -69,6 +69,49 @@ export async function getDashboardCollections(
   });
 }
 
+// A collection shaped for the sidebar list: item count plus an accent color
+// derived from its most-used item type (rendered as a colored dot for recents).
+export interface SidebarCollection {
+  id: string;
+  name: string;
+  isFavorite: boolean;
+  itemCount: number;
+  accentColor: string | null; // hex of the most-used item type
+}
+
+// All of the user's collections for the sidebar, newest first. Each carries an
+// accent color (most-used item type) so recents can show a colored dot.
+export async function getSidebarCollections(): Promise<SidebarCollection[]> {
+  const collections = await prisma.collection.findMany({
+    where: { user: { email: DEMO_USER_EMAIL } },
+    orderBy: { createdAt: "desc" },
+    include: {
+      _count: { select: { items: true } },
+      items: { select: { type: { select: { id: true, color: true } } } },
+    },
+  });
+
+  return collections.map((collection) => {
+    // The most-used type's color drives the accent dot.
+    const counts = new Map<string, { count: number; color: string | null }>();
+    for (const { type } of collection.items) {
+      const entry = counts.get(type.id);
+      if (entry) entry.count += 1;
+      else counts.set(type.id, { count: 1, color: type.color });
+    }
+    const accentColor =
+      [...counts.values()].sort((a, b) => b.count - a.count)[0]?.color ?? null;
+
+    return {
+      id: collection.id,
+      name: collection.name,
+      isFavorite: collection.isFavorite,
+      itemCount: collection._count.items,
+      accentColor,
+    };
+  });
+}
+
 // Collection counts for the dashboard stats cards.
 export async function getCollectionStats(): Promise<{
   total: number;

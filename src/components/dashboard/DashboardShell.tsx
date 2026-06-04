@@ -5,6 +5,8 @@ import { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
+import type { SidebarItemType } from "@/lib/db/items";
+import type { SidebarCollection } from "@/lib/db/collections";
 
 const MOBILE_QUERY = "(max-width: 767px)";
 
@@ -27,7 +29,13 @@ function useIsMobile() {
 // an overlay drawer (always a drawer below the md breakpoint).
 export function DashboardShell({
   children,
-}: Readonly<{ children: React.ReactNode }>) {
+  itemTypes,
+  collections,
+}: Readonly<{
+  children: React.ReactNode;
+  itemTypes: SidebarItemType[];
+  collections: SidebarCollection[];
+}>) {
   const isMobile = useIsMobile();
   // null = follow the breakpoint default (open on desktop, closed on mobile);
   // a concrete boolean means the user has toggled it explicitly.
@@ -60,7 +68,12 @@ export function DashboardShell({
             collapsed ? "w-16" : "w-64",
           )}
         >
-          <Sidebar collapsed={collapsed} onNavigate={() => setOpen(false)} />
+          <Sidebar
+            itemTypes={itemTypes}
+            collections={collections}
+            collapsed={collapsed}
+            onNavigate={() => setOpen(false)}
+          />
         </aside>
 
         <main className="flex-1 overflow-auto p-6">{children}</main>
