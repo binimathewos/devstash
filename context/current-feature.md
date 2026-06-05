@@ -1,18 +1,19 @@
 # Current Feature
 
-<!-- Feature name and short description -->
+Quick Wins — Code Scan Cleanup. Two low-risk fixes surfaced by the code-scanner audit. No user-facing behavior change; both are defensive hardening.
 
 ## Status
 
-<!-- Not Started | In Progress | Completed -->
+In Progress
 
 ## Goals
 
-<!-- Goals and requirments -->
+1. **`getPinnedItems` has no `take` limit** — `src/lib/db/items.ts`. `findMany({ where: { isPinned: true } })` is unbounded, so the dashboard Pinned section would render every pinned item a user ever created. Add `take: 20` so it stays a capped summary.
+2. **Missing `DATABASE_URL` guard** — `src/lib/prisma.ts`. `process.env.DATABASE_URL` is passed to `new PrismaPg(...)` without a null check. Throw a clear `"DATABASE_URL environment variable is not set"` at module load so a misconfigured deployment fails loudly instead of crashing deep in the pg driver.
 
 ## Notes
 
-<!-- Any extera notes -->
+- Both changes are independent and low-risk. Verify with `npm run lint` and `npm run build` before committing.
 
 ## History
 

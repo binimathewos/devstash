@@ -60,6 +60,7 @@ export async function getPinnedItems(): Promise<DashboardItem[]> {
   const items = await prisma.item.findMany({
     where: { user: { email: DEMO_USER_EMAIL }, isPinned: true },
     orderBy: { createdAt: "desc" },
+    take: 20,
     select: dashboardItemSelect,
   });
   return items.map(toDashboardItem);
