@@ -5,6 +5,9 @@ import { PrismaClient } from "@/generated/prisma/client";
 // connects to Neon over its standard (pooled) connection string in the Node
 // runtime. For edge/serverless-driver usage, swap to @prisma/adapter-neon.
 const connectionString = process.env.DATABASE_URL;
+if (!connectionString) {
+  throw new Error("DATABASE_URL environment variable is not set");
+}
 
 const createPrismaClient = () => {
   const adapter = new PrismaPg({ connectionString });
