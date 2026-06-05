@@ -1,19 +1,18 @@
 # Current Feature
 
-Quick Wins — Code Scan Cleanup. Two low-risk fixes surfaced by the code-scanner audit. No user-facing behavior change; both are defensive hardening.
+<!-- Feature name and short description -->
 
 ## Status
 
-In Progress
+<!-- Not Started | In Progress | Completed -->
 
 ## Goals
 
-1. **`getPinnedItems` has no `take` limit** — `src/lib/db/items.ts`. `findMany({ where: { isPinned: true } })` is unbounded, so the dashboard Pinned section would render every pinned item a user ever created. Add `take: 20` so it stays a capped summary.
-2. **Missing `DATABASE_URL` guard** — `src/lib/prisma.ts`. `process.env.DATABASE_URL` is passed to `new PrismaPg(...)` without a null check. Throw a clear `"DATABASE_URL environment variable is not set"` at module load so a misconfigured deployment fails loudly instead of crashing deep in the pg driver.
+<!-- Goals and requirments -->
 
 ## Notes
 
-- Both changes are independent and low-risk. Verify with `npm run lint` and `npm run build` before committing.
+<!-- Any extera notes -->
 
 ## History
 
@@ -29,3 +28,4 @@ In Progress
 - 2026-06-03 — Dashboard Items completed on branch `feature/dashboard-items` (per `context/features/dashboard-items-spec.md`). Replaced the dummy Pinned/Recent item data in the dashboard main area with live Neon/Prisma queries. Added `src/lib/db/items.ts` (scoped to the seeded demo user until auth lands) with a shared `dashboardItemSelect` + `DashboardItem` shape that flattens each item's type icon/color and tag names, plus `getPinnedItems` (pinned items, newest first; returns `[]` so the section hides when empty), `getRecentItems(limit = 10)`, and `getItemStats` (total + favorite item counts). Refactored `ItemRow.tsx` to take a single `DashboardItem` instead of `Item` + `ItemType` — type icon color is now a per-type hex via inline `style` (matching `CollectionCard`), and the description renders only when present. `dashboard/page.tsx` now fetches collections, both stat sets, pinned, and recent items in one parallel `Promise.all`, dropping the `mock-data` import; `StatsCards` shows real item totals/favorites. DB `createdAt` (a `Date`) is sliced to `YYYY-MM-DD` for `formatShortDate`. `src/lib/mock-data.ts` remains (still used by the Sidebar). `npm run lint` and `npm run build` pass.
 - 2026-06-03 — Stats & Sidebar completed on branch `feature/stats-sidebar` (per `context/features/stats-sidebar-spec.md`). Moved the dashboard sidebar off `src/lib/mock-data.ts` and onto live Neon/Prisma data (main-area stats were already DB-backed from the prior two features). Added `getSidebarItemTypes` (+ `SidebarItemType`) to `src/lib/db/items.ts` — all 7 system types with the demo user's per-type item counts via `prisma.item.groupBy`, returned in a fixed display order (`SYSTEM_TYPE_ORDER`: snippet, prompt, command, note, file, image, link; the DB has no ordering column). Added `getSidebarCollections` (+ `SidebarCollection`) to `src/lib/db/collections.ts` — the user's collections newest-first, each with item count and an accent color (most-used item type). Rewrote `Sidebar.tsx` to take `itemTypes` + `collections` props instead of mock data (kept mock `currentUser` until auth lands): hex icon colors via inline `style`, capitalized labels (DB names are singular/lowercase), type links to `/items/[name]`, a star for favorite collections and a colored dot (most-used type) for recents, and a new "View all collections" link → `/collections`. Threaded the two props through `DashboardShell.tsx` and made `dashboard/layout.tsx` an async server component fetching both in parallel. `npm run lint` and `npm run build` pass; browser smoke test confirmed type order, counts, hex colors, favorite stars, recent dots, and the View-all link all render from the DB with no console/server errors.
 - 2026-06-03 — Add Pro Badge to Sidebar completed on branch `feature/add-pro-badge-sidebar` (per `context/features/add-pro-badge-sidebar.md`). Added a subtle "PRO" badge to the File and Image item-type rows in the sidebar to signal they're Pro-tier (file uploads). Installed the ShadCN `badge` component (`src/components/ui/badge.tsx`, via `shadcn add badge`) and used it in `Sidebar.tsx`: a module-level `PRO_TYPES = new Set(["file", "image"])` (keyed on the lowercase DB `type.name`) gates a conditional `<Badge variant="outline">PRO</Badge>` rendered between the type label and count in the expanded Types list — tightened sizing (`h-4 px-1.5 text-[9px] font-semibold tracking-wider text-muted-foreground`) for a clean, quiet look. Badge shows only in the expanded sidebar (the icon-only collapsed rail is unchanged); it's shown to all users as a feature label since auth/`isPro` gating isn't wired yet. `npm run lint` and `npm run build` pass.
+- 2026-06-04 — Quick Wins — Code Scan Cleanup completed on branch `feature/quick-wins-scan-cleanup`. Two low-risk defensive fixes from the code-scanner audit (no user-facing behavior change): (1) `getPinnedItems` in `src/lib/db/items.ts` now uses `take: 20` so the dashboard Pinned section stays a capped summary instead of an unbounded `findMany`; (2) `src/lib/prisma.ts` throws `"DATABASE_URL environment variable is not set"` at module load when the env var is missing, so a misconfigured deployment fails loudly instead of crashing deep in the pg driver. Other scan findings (over-fetch in `getSidebarCollections`/`getDashboardCollections`, array-index React key in `CollectionCard`, stale mock `currentUser` in `Sidebar`, `TopBar` client-boundary, `formatShortDate` parse, seed `contentType` for links) were deferred. `npm run lint` and `npm run build` pass.
