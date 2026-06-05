@@ -1,5 +1,7 @@
 import NextAuth from "next-auth";
+import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
+import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
 
@@ -9,6 +11,45 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: { strategy: "jwt" },
   ...authConfig,
+  // Replace the edge-safe Credentials placeholder with the real bcrypt
+  // validation. We recreate the provider via Credentials() rather than spreading
+  // the placeholder: Credentials() nests the config under `options`, which
+  // Auth.js merges *over* the top-level fields — so a spread-level `authorize`
+  // would be clobbered by the placeholder's `options.authorize`. GitHub is left
+  // untouched.
+  providers: authConfig.providers.map((provider) =>
+    typeof provider === "function" || provider.id !== "credentials"
+      ? provider
+      : Credentials({
+          credentials: {
+            email: { label: "Email", type: "email" },
+            password: { label: "Password", type: "password" },
+          },
+          authorize: async (credentials) => {
+            const email = credentials?.email;
+            const password = credentials?.password;
+            if (typeof email !== "string" || typeof password !== "string") {
+              return null;
+            }
+
+            const user = await prisma.user.findUnique({
+              where: { email: email.toLowerCase() },
+            });
+            // No user, or an OAuth-only account with no password set.
+            if (!user?.password) return null;
+
+            const valid = await bcrypt.compare(password, user.password);
+            if (!valid) return null;
+
+            return {
+              id: user.id,
+              name: user.name,
+              email: user.email,
+              image: user.image,
+            };
+          },
+        }),
+  ),
   callbacks: {
     // Persist the user id on the token at sign-in...
     jwt({ token, user }) {
