@@ -5,6 +5,7 @@ import { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
+import type { SidebarUserData } from "@/components/dashboard/SidebarUser";
 import type { SidebarItemType } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
 
@@ -31,10 +32,12 @@ export function DashboardShell({
   children,
   itemTypes,
   collections,
+  user,
 }: Readonly<{
   children: React.ReactNode;
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
+  user: SidebarUserData;
 }>) {
   const isMobile = useIsMobile();
   // null = follow the breakpoint default (open on desktop, closed on mobile);
@@ -71,6 +74,7 @@ export function DashboardShell({
           <Sidebar
             itemTypes={itemTypes}
             collections={collections}
+            user={user}
             collapsed={collapsed}
             onNavigate={() => setOpen(false)}
           />

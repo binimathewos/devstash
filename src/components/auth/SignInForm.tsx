@@ -1,0 +1,156 @@
+"use client";
+
+import { useState } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+
+// lucide-react v1 dropped brand icons, so inline the GitHub mark.
+function GithubIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-hidden
+      className={className}
+    >
+      <path d="M12 .5C5.37.5 0 5.78 0 12.29c0 5.2 3.44 9.6 8.21 11.16.6.11.82-.25.82-.57 0-.28-.01-1.02-.02-2-3.34.71-4.04-1.58-4.04-1.58-.55-1.36-1.34-1.72-1.34-1.72-1.09-.73.08-.72.08-.72 1.2.08 1.84 1.21 1.84 1.21 1.07 1.8 2.81 1.28 3.5.98.11-.76.42-1.28.76-1.58-2.67-.3-5.47-1.31-5.47-5.81 0-1.28.47-2.33 1.23-3.15-.12-.3-.53-1.5.12-3.13 0 0 1-.32 3.3 1.2a11.6 11.6 0 0 1 6 0c2.28-1.52 3.29-1.2 3.29-1.2.65 1.63.24 2.83.12 3.13.77.82 1.23 1.87 1.23 3.15 0 4.51-2.81 5.5-5.49 5.79.43.36.81 1.09.81 2.2 0 1.59-.01 2.87-.01 3.26 0 .32.21.69.82.57A12.01 12.01 0 0 0 24 12.29C24 5.78 18.63.5 12 .5z" />
+    </svg>
+  );
+}
+
+interface SignInFormProps {
+  // Where to land after a successful sign-in.
+  callbackUrl: string;
+  // Error code passed back by NextAuth on a failed redirect-based attempt.
+  initialError?: string;
+  // True when arriving here right after creating an account.
+  registered?: boolean;
+}
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export function SignInForm({
+  callbackUrl,
+  initialError,
+  registered,
+}: SignInFormProps) {
+  const router = useRouter();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState(
+    initialError ? "Unable to sign in. Please try again." : "",
+  );
+  const [loading, setLoading] = useState(false);
+
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setError("");
+
+    if (!EMAIL_REGEX.test(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
+    if (!password) {
+      setError("Please enter your password.");
+      return;
+    }
+
+    setLoading(true);
+    const result = await signIn("credentials", {
+      email,
+      password,
+      redirect: false,
+    });
+    setLoading(false);
+
+    if (!result || result.error) {
+      setError("Invalid email or password.");
+      return;
+    }
+
+    router.push(callbackUrl);
+    router.refresh();
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {registered && (
+        <p
+          role="status"
+          className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
+        >
+          Account created. Please sign in.
+        </p>
+      )}
+
+      <Button
+        type="button"
+        variant="outline"
+        size="lg"
+        onClick={() => signIn("github", { callbackUrl })}
+      >
+        <GithubIcon className="size-4" />
+        Sign in with GitHub
+      </Button>
+
+      <div className="flex items-center gap-3 text-xs text-muted-foreground">
+        <span className="h-px flex-1 bg-border" />
+        OR
+        <span className="h-px flex-1 bg-border" />
+      </div>
+
+      <form onSubmit={handleSubmit} className="flex flex-col gap-3" noValidate>
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="email" className="text-sm font-medium">
+            Email
+          </label>
+          <Input
+            id="email"
+            type="email"
+            autoComplete="email"
+            placeholder="you@example.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="password" className="text-sm font-medium">
+            Password
+          </label>
+          <Input
+            id="password"
+            type="password"
+            autoComplete="current-password"
+            placeholder="••••••••"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+          />
+        </div>
+
+        {error && (
+          <p role="alert" className="text-sm text-destructive">
+            {error}
+          </p>
+        )}
+
+        <Button type="submit" size="lg" disabled={loading}>
+          {loading ? "Signing in…" : "Sign in"}
+        </Button>
+      </form>
+
+      <p className="text-center text-sm text-muted-foreground">
+        Don&apos;t have an account?{" "}
+        <Link href="/register" className="font-medium text-primary hover:underline">
+          Create one
+        </Link>
+      </p>
+    </div>
+  );
+}
