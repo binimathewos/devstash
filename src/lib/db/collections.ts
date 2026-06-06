@@ -1,8 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
-// Temporary: scope queries to the seeded demo user until auth is wired up.
-const DEMO_USER_EMAIL = "demo@devstash.io";
-
 // A small type-icon badge shown along the bottom of a collection card.
 export interface CollectionTypeBadge {
   icon: string; // lucide icon name
@@ -24,10 +21,11 @@ export interface DashboardCollection {
 // Recent collections for the dashboard main area. Each item carries only its
 // type's icon/color so we can compute the accent color + badges in memory.
 export async function getDashboardCollections(
+  userId: string,
   limit = 6,
 ): Promise<DashboardCollection[]> {
   const collections = await prisma.collection.findMany({
-    where: { user: { email: DEMO_USER_EMAIL } },
+    where: { userId },
     orderBy: { createdAt: "desc" },
     take: limit,
     include: {
@@ -81,9 +79,11 @@ export interface SidebarCollection {
 
 // All of the user's collections for the sidebar, newest first. Each carries an
 // accent color (most-used item type) so recents can show a colored dot.
-export async function getSidebarCollections(): Promise<SidebarCollection[]> {
+export async function getSidebarCollections(
+  userId: string,
+): Promise<SidebarCollection[]> {
   const collections = await prisma.collection.findMany({
-    where: { user: { email: DEMO_USER_EMAIL } },
+    where: { userId },
     orderBy: { createdAt: "desc" },
     include: {
       _count: { select: { items: true } },
@@ -113,14 +113,13 @@ export async function getSidebarCollections(): Promise<SidebarCollection[]> {
 }
 
 // Collection counts for the dashboard stats cards.
-export async function getCollectionStats(): Promise<{
+export async function getCollectionStats(userId: string): Promise<{
   total: number;
   favorites: number;
 }> {
-  const where = { user: { email: DEMO_USER_EMAIL } };
   const [total, favorites] = await Promise.all([
-    prisma.collection.count({ where }),
-    prisma.collection.count({ where: { ...where, isFavorite: true } }),
+    prisma.collection.count({ where: { userId } }),
+    prisma.collection.count({ where: { userId, isFavorite: true } }),
   ]);
   return { total, favorites };
 }

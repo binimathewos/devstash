@@ -2,26 +2,17 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { ChevronDown, Settings, Star } from "lucide-react";
+import { ChevronDown, Star } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { currentUser } from "@/lib/mock-data";
 import type { SidebarItemType } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
 import { typeIcon, typeSlug } from "@/lib/type-icons";
 import { Badge } from "@/components/ui/badge";
+import { SidebarUser, type SidebarUserData } from "@/components/dashboard/SidebarUser";
 
 // Item types gated behind the Pro plan (file uploads).
 const PRO_TYPES = new Set(["file", "image"]);
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .map((part) => part[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
 
 // DB type names are singular and lowercase ("snippet"); show them capitalized.
 function typeLabel(name: string) {
@@ -58,6 +49,7 @@ function Section({ title, children }: SectionProps) {
 interface SidebarProps {
   itemTypes: SidebarItemType[];
   collections: SidebarCollection[];
+  user: SidebarUserData;
   // Icon-only rail mode (desktop collapsed state).
   collapsed?: boolean;
   // Called whenever a link is followed, so the mobile drawer can close.
@@ -67,6 +59,7 @@ interface SidebarProps {
 export function Sidebar({
   itemTypes,
   collections,
+  user,
   collapsed = false,
   onNavigate,
 }: SidebarProps) {
@@ -96,21 +89,7 @@ export function Sidebar({
           })}
         </nav>
 
-        <div className="flex flex-col items-center gap-2 border-t border-border py-3">
-          <div
-            className="flex size-9 items-center justify-center rounded-full bg-muted text-sm font-medium"
-            title={currentUser.name}
-          >
-            {initials(currentUser.name)}
-          </div>
-          <button
-            type="button"
-            aria-label="Settings"
-            className="flex size-8 items-center justify-center rounded-md text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-          >
-            <Settings className="size-4" />
-          </button>
-        </div>
+        <SidebarUser user={user} collapsed />
       </div>
     );
   }
@@ -209,24 +188,7 @@ export function Sidebar({
         </Section>
       </nav>
 
-      <div className="flex items-center gap-3 border-t border-border p-3">
-        <div className="flex size-9 shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium">
-          {initials(currentUser.name)}
-        </div>
-        <div className="min-w-0 flex-1">
-          <p className="truncate text-sm font-medium">{currentUser.name}</p>
-          <p className="truncate text-xs text-muted-foreground">
-            {currentUser.email}
-          </p>
-        </div>
-        <button
-          type="button"
-          aria-label="Settings"
-          className="rounded-md p-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
-        >
-          <Settings className="size-4" />
-        </button>
-      </div>
+      <SidebarUser user={user} />
     </div>
   );
 }

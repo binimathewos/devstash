@@ -6,6 +6,7 @@ import {
   getDashboardCollections,
 } from "@/lib/db/collections";
 import { getItemStats, getPinnedItems, getRecentItems } from "@/lib/db/items";
+import { requireUserId } from "@/lib/session";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { CollectionCard } from "@/components/dashboard/CollectionCard";
 import { ItemRow } from "@/components/dashboard/ItemRow";
@@ -15,13 +16,14 @@ import { ItemRow } from "@/components/dashboard/ItemRow";
 export const dynamic = "force-dynamic";
 
 export default async function DashboardPage() {
+  const userId = await requireUserId();
   const [collections, collectionStats, itemStats, pinnedItems, recentItems] =
     await Promise.all([
-      getDashboardCollections(),
-      getCollectionStats(),
-      getItemStats(),
-      getPinnedItems(),
-      getRecentItems(),
+      getDashboardCollections(userId),
+      getCollectionStats(userId),
+      getItemStats(userId),
+      getPinnedItems(userId),
+      getRecentItems(userId),
     ]);
 
   return (

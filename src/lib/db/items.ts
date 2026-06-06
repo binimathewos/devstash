@@ -1,8 +1,5 @@
 import { prisma } from "@/lib/prisma";
 
-// Temporary: scope queries to the seeded demo user until auth is wired up.
-const DEMO_USER_EMAIL = "demo@devstash.io";
-
 // An item shaped for the dashboard lists (Pinned / Recent). Carries its type's
 // icon + color so the row can render the badge without a second lookup.
 export interface DashboardItem {
@@ -56,9 +53,9 @@ function toDashboardItem(item: ItemRecord): DashboardItem {
 
 // Pinned items for the dashboard. Returns [] when none are pinned, so the
 // caller can hide the section entirely.
-export async function getPinnedItems(): Promise<DashboardItem[]> {
+export async function getPinnedItems(userId: string): Promise<DashboardItem[]> {
   const items = await prisma.item.findMany({
-    where: { user: { email: DEMO_USER_EMAIL }, isPinned: true },
+    where: { userId, isPinned: true },
     orderBy: { createdAt: "desc" },
     take: 20,
     select: dashboardItemSelect,
@@ -67,9 +64,12 @@ export async function getPinnedItems(): Promise<DashboardItem[]> {
 }
 
 // Most recently created items for the dashboard main area.
-export async function getRecentItems(limit = 10): Promise<DashboardItem[]> {
+export async function getRecentItems(
+  userId: string,
+  limit = 10,
+): Promise<DashboardItem[]> {
   const items = await prisma.item.findMany({
-    where: { user: { email: DEMO_USER_EMAIL } },
+    where: { userId },
     orderBy: { createdAt: "desc" },
     take: limit,
     select: dashboardItemSelect,
@@ -101,7 +101,9 @@ const SYSTEM_TYPE_ORDER = [
 
 // System item types for the sidebar, each with the user's item count. All
 // system types are returned (even with a zero count) so the list is stable.
-export async function getSidebarItemTypes(): Promise<SidebarItemType[]> {
+export async function getSidebarItemTypes(
+  userId: string,
+): Promise<SidebarItemType[]> {
   const [types, counts] = await Promise.all([
     prisma.itemType.findMany({
       where: { isSystem: true },
@@ -109,7 +111,7 @@ export async function getSidebarItemTypes(): Promise<SidebarItemType[]> {
     }),
     prisma.item.groupBy({
       by: ["typeId"],
-      where: { user: { email: DEMO_USER_EMAIL } },
+      where: { userId },
       _count: { _all: true },
     }),
   ]);
@@ -133,14 +135,13 @@ export async function getSidebarItemTypes(): Promise<SidebarItemType[]> {
 }
 
 // Item counts for the dashboard stats cards.
-export async function getItemStats(): Promise<{
+export async function getItemStats(userId: string): Promise<{
   total: number;
   favorites: number;
 }> {
-  const where = { user: { email: DEMO_USER_EMAIL } };
   const [total, favorites] = await Promise.all([
-    prisma.item.count({ where }),
-    prisma.item.count({ where: { ...where, isFavorite: true } }),
+    prisma.item.count({ where: { userId } }),
+    prisma.item.count({ where: { userId, isFavorite: true } }),
   ]);
   return { total, favorites };
 }

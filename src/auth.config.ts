@@ -13,6 +13,12 @@ import type { NextAuthConfig } from "next-auth";
 // overrides this provider's `authorize` — bcrypt/Prisma must stay out of the
 // edge-safe config.
 export default {
+  // Custom auth pages (replaces NextAuth's default sign-in UI). Both the full
+  // auth instance and the proxy read this, so an unauthenticated visit to a
+  // protected route lands on /sign-in.
+  pages: {
+    signIn: "/sign-in",
+  },
   providers: [
     GitHub,
     Credentials({
