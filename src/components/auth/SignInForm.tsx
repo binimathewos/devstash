@@ -7,6 +7,7 @@ import { signIn } from "next-auth/react";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ResendVerification } from "@/components/auth/ResendVerification";
 
 // lucide-react v1 dropped brand icons, so inline the GitHub mark.
 function GithubIcon({ className }: { className?: string }) {
@@ -27,16 +28,34 @@ interface SignInFormProps {
   callbackUrl: string;
   // Error code passed back by NextAuth on a failed redirect-based attempt.
   initialError?: string;
-  // True when arriving here right after creating an account.
-  registered?: boolean;
+  // Status from the email-verification flow: "1" (verified), "expired",
+  // "invalid", or "error".
+  verified?: string;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+// Maps the ?verified= query param to a user-facing notice. Returns null for
+// values that shouldn't show anything.
+function verifiedNotice(verified?: string): string | null {
+  switch (verified) {
+    case "1":
+      return "Email verified — you can now sign in.";
+    case "expired":
+      return "That verification link has expired. Sign in to get a new one sent.";
+    case "invalid":
+      return "That verification link is invalid or has already been used.";
+    case "error":
+      return "We couldn't verify your email. Please try again.";
+    default:
+      return null;
+  }
+}
+
 export function SignInForm({
   callbackUrl,
   initialError,
-  registered,
+  verified,
 }: SignInFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -45,10 +64,16 @@ export function SignInForm({
     initialError ? "Unable to sign in. Please try again." : "",
   );
   const [loading, setLoading] = useState(false);
+  // True once a sign-in attempt fails specifically because the email is
+  // unverified — surfaces a resend affordance.
+  const [needsVerification, setNeedsVerification] = useState(false);
+
+  const notice = verifiedNotice(verified);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setError("");
+    setNeedsVerification(false);
 
     if (!EMAIL_REGEX.test(email)) {
       setError("Please enter a valid email address.");
@@ -68,6 +93,13 @@ export function SignInForm({
     setLoading(false);
 
     if (!result || result.error) {
+      // Surfaced from the authorize() EmailNotVerifiedError — password was
+      // correct, but the account hasn't been verified yet.
+      if (result?.code === "email_not_verified") {
+        setNeedsVerification(true);
+        setError("Please verify your email before signing in.");
+        return;
+      }
       setError("Invalid email or password.");
       return;
     }
@@ -78,12 +110,12 @@ export function SignInForm({
 
   return (
     <div className="flex flex-col gap-4">
-      {registered && (
+      {notice && (
         <p
           role="status"
           className="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-muted-foreground"
         >
-          Account created. Please sign in.
+          {notice}
         </p>
       )}
 
@@ -139,6 +171,8 @@ export function SignInForm({
             {error}
           </p>
         )}
+
+        {needsVerification && <ResendVerification email={email} />}
 
         <Button type="submit" size="lg" disabled={loading}>
           {loading ? "Signing in…" : "Sign in"}

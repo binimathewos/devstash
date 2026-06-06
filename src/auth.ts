@@ -1,9 +1,16 @@
-import NextAuth from "next-auth";
+import NextAuth, { CredentialsSignin } from "next-auth";
 import Credentials from "next-auth/providers/credentials";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
+
+// Thrown when a valid password is supplied for an account that hasn't confirmed
+// its email yet. The `code` is surfaced to the client via signIn({redirect:false})
+// so the sign-in form can show a "verify your email" message.
+class EmailNotVerifiedError extends CredentialsSignin {
+  code = "email_not_verified";
+}
 
 // Full config: adds the Prisma adapter and the JWT session strategy. Import
 // this everywhere in the app except the proxy (which uses auth.config directly).
@@ -40,6 +47,10 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
 
             const valid = await bcrypt.compare(password, user.password);
             if (!valid) return null;
+
+            // Password is correct — only now do we reveal the unverified state,
+            // so this hint is never shown to someone who doesn't know the password.
+            if (!user.emailVerified) throw new EmailNotVerifiedError();
 
             return {
               id: user.id,

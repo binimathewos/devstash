@@ -2,22 +2,23 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ResendVerification } from "@/components/auth/ResendVerification";
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 export function RegisterForm() {
-  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  // Once registered, swap the form for a "check your email" confirmation.
+  const [registeredEmail, setRegisteredEmail] = useState("");
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -54,13 +55,39 @@ export function RegisterForm() {
         return;
       }
 
-      // Account created — send them to sign in.
-      router.push("/sign-in?registered=1");
+      // Account created — show the "check your email" confirmation. They must
+      // verify via the emailed link before they can sign in.
+      setRegisteredEmail(email.trim().toLowerCase());
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }
+  }
+
+  if (registeredEmail) {
+    return (
+      <div className="flex flex-col gap-4 text-center">
+        <p
+          role="status"
+          className="rounded-md border border-border bg-muted/50 px-3 py-3 text-sm text-muted-foreground"
+        >
+          Almost there! We sent a verification link to{" "}
+          <span className="font-medium text-foreground">{registeredEmail}</span>
+          . Click it to activate your account, then sign in.
+        </p>
+        <div className="flex flex-col items-center gap-2 text-sm text-muted-foreground">
+          <span>Didn&apos;t get the email?</span>
+          <ResendVerification email={registeredEmail} />
+        </div>
+        <Link
+          href="/sign-in"
+          className="font-medium text-primary hover:underline"
+        >
+          Back to sign in
+        </Link>
+      </div>
+    );
   }
 
   return (
