@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
+import { createAndSendVerificationToken } from "@/lib/verification";
 
 // POST /api/auth/register — create a new email/password user.
 // Body: { name, email, password, confirmPassword }
@@ -70,6 +71,8 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
+    // Created with emailVerified = null (schema default); the user must confirm
+    // via the link before they can sign in with credentials.
     const user = await prisma.user.create({
       data: {
         name: trimmedName,
@@ -78,10 +81,21 @@ export async function POST(request: Request) {
       },
     });
 
+    // Send the verification email. The account already exists, so a send failure
+    // shouldn't fail registration — surface it via `emailSent` and let the user
+    // re-request the link from the "check your email" screen.
+    let emailSent = true;
+    try {
+      await createAndSendVerificationToken(user.email, user.name);
+    } catch (emailError) {
+      emailSent = false;
+      console.error("Verification email failed to send:", emailError);
+    }
+
     return NextResponse.json(
       {
         success: true,
-        data: { id: user.id, name: user.name, email: user.email },
+        data: { id: user.id, name: user.name, email: user.email, emailSent },
       },
       { status: 201 },
     );

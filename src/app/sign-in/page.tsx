@@ -15,17 +15,17 @@ export default async function SignInPage({
   searchParams: Promise<{
     callbackUrl?: string;
     error?: string;
-    registered?: string;
+    verified?: string;
   }>;
 }) {
-  const { callbackUrl, error, registered } = await searchParams;
+  const { callbackUrl, error, verified } = await searchParams;
 
   return (
     <AuthCard title="Welcome back" subtitle="Sign in to your DevStash account">
       <SignInForm
         callbackUrl={callbackUrl || "/dashboard"}
         initialError={error}
-        registered={registered === "1"}
+        verified={verified}
       />
     </AuthCard>
   );
