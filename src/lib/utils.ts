@@ -17,3 +17,10 @@ export function formatShortDate(isoDate: string) {
   if (!month || !day) return isoDate;
   return `${MONTHS[month - 1]} ${day}`;
 }
+
+// Formats an ISO date string ("2026-01-15") with the year ("Jan 15, 2026").
+export function formatLongDate(isoDate: string) {
+  const [year, month, day] = isoDate.split("-").map(Number);
+  if (!year || !month || !day) return isoDate;
+  return `${MONTHS[month - 1]} ${day}, ${year}`;
+}
