@@ -34,6 +34,8 @@ interface SignInFormProps {
   // "1" after a successful registration when verification is disabled — the
   // account is already active, so we just confirm and prompt to sign in.
   registered?: string;
+  // "1" after a successful password reset — confirm and prompt to sign in.
+  reset?: string;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -60,6 +62,7 @@ export function SignInForm({
   initialError,
   verified,
   registered,
+  reset,
 }: SignInFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -74,7 +77,11 @@ export function SignInForm({
 
   const notice =
     verifiedNotice(verified) ??
-    (registered === "1" ? "Account created — you can now sign in." : null);
+    (registered === "1"
+      ? "Account created — you can now sign in."
+      : reset === "1"
+        ? "Password reset — sign in with your new password."
+        : null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -158,9 +165,17 @@ export function SignInForm({
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <label htmlFor="password" className="text-sm font-medium">
-            Password
-          </label>
+          <div className="flex items-center justify-between">
+            <label htmlFor="password" className="text-sm font-medium">
+              Password
+            </label>
+            <Link
+              href="/forgot-password"
+              className="text-xs font-medium text-primary hover:underline"
+            >
+              Forgot password?
+            </Link>
+          </div>
           <Input
             id="password"
             type="password"
