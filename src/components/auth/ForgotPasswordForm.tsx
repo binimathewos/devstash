@@ -28,11 +28,21 @@ export function ForgotPasswordForm() {
 
     setLoading(true);
     try {
-      await fetch("/api/auth/forgot-password", {
+      const res = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+
+      // The endpoint always succeeds to avoid account enumeration — except when
+      // rate limited (429), which doesn't reveal anything about the account and
+      // should be surfaced so the user knows to slow down.
+      if (res.status === 429) {
+        const data = await res.json().catch(() => null);
+        setError(data?.error ?? "Too many attempts. Please try again later.");
+        return;
+      }
+
       setSent(true);
     } catch {
       setError("Something went wrong. Please try again.");

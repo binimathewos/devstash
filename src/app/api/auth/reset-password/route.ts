@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { resetPasswordWithToken } from "@/lib/verification";
+import { checkRateLimit, getClientIp, rateLimitedResponse } from "@/lib/rate-limit";
 
 // POST /api/auth/reset-password — set a new password using a reset token.
 // Body: { token, password, confirmPassword }
@@ -8,6 +9,13 @@ const MIN_PASSWORD_LENGTH = 8;
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = await checkRateLimit("reset-password", 5, "15 m", ip);
+    if (!rateLimit.success) {
+      const { error, status, headers } = rateLimitedResponse(rateLimit.reset);
+      return NextResponse.json({ success: false, error }, { status, headers });
+    }
+
     const body = await request.json().catch(() => null);
     const { token, password, confirmPassword } = body ?? {};
 
