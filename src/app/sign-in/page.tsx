@@ -17,9 +17,11 @@ export default async function SignInPage({
     error?: string;
     verified?: string;
     registered?: string;
+    reset?: string;
   }>;
 }) {
-  const { callbackUrl, error, verified, registered } = await searchParams;
+  const { callbackUrl, error, verified, registered, reset } =
+    await searchParams;
 
   return (
     <AuthCard title="Welcome back" subtitle="Sign in to your DevStash account">
@@ -28,6 +30,7 @@ export default async function SignInPage({
         initialError={error}
         verified={verified}
         registered={registered}
+        reset={reset}
       />
     </AuthCard>
   );

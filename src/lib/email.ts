@@ -59,3 +59,40 @@ export async function sendVerificationEmail({
     `,
   });
 }
+
+interface SendPasswordResetEmailArgs {
+  to: string;
+  name: string | null;
+  resetUrl: string;
+}
+
+// Send the "reset your password" message with the single-use reset link.
+export async function sendPasswordResetEmail({
+  to,
+  name,
+  resetUrl,
+}: SendPasswordResetEmailArgs) {
+  const greeting = name ? `Hi ${name},` : "Hi,";
+
+  return getResend().emails.send({
+    from: EMAIL_FROM,
+    to,
+    subject: "Reset your DevStash password",
+    html: `
+      <div style="font-family: -apple-system, system-ui, sans-serif; max-width: 480px; margin: 0 auto; color: #111;">
+        <h1 style="font-size: 20px;">Reset your password</h1>
+        <p>${greeting}</p>
+        <p>We received a request to reset the password for your DevStash account. Click the button below to choose a new one.</p>
+        <p style="margin: 24px 0;">
+          <a href="${resetUrl}"
+             style="display: inline-block; background: #6d28d9; color: #fff; text-decoration: none; padding: 12px 20px; border-radius: 8px; font-weight: 600;">
+            Reset password
+          </a>
+        </p>
+        <p style="color: #555; font-size: 14px;">Or paste this link into your browser:</p>
+        <p style="color: #555; font-size: 14px; word-break: break-all;">${resetUrl}</p>
+        <p style="color: #555; font-size: 14px;">This link expires in 1 hour. If you didn't request a password reset, you can safely ignore this email — your password won't change.</p>
+      </div>
+    `,
+  });
+}
