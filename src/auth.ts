@@ -5,12 +5,20 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
 import { isEmailVerificationEnabled } from "@/lib/config";
+import { checkRateLimit, getClientIp } from "@/lib/rate-limit";
 
 // Thrown when a valid password is supplied for an account that hasn't confirmed
 // its email yet. The `code` is surfaced to the client via signIn({redirect:false})
 // so the sign-in form can show a "verify your email" message.
 class EmailNotVerifiedError extends CredentialsSignin {
   code = "email_not_verified";
+}
+
+// Thrown when the IP+email combo has exceeded the login attempt limit. Checked
+// before any user lookup so the limiter doubles as brute-force protection
+// without leaking whether the account exists.
+class RateLimitedError extends CredentialsSignin {
+  code = "rate_limited";
 }
 
 // Full config: adds the Prisma adapter and the JWT session strategy. Import
@@ -33,15 +41,32 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             email: { label: "Email", type: "email" },
             password: { label: "Password", type: "password" },
           },
-          authorize: async (credentials) => {
+          authorize: async (credentials, request) => {
             const email = credentials?.email;
             const password = credentials?.password;
             if (typeof email !== "string" || typeof password !== "string") {
               return null;
             }
 
+            const normalizedEmail = email.toLowerCase();
+
+            // Keyed by IP + email so a single attacker can't lock out a victim's
+            // account, while still capping brute-force/credential-stuffing
+            // attempts against any one (IP, email) pair. Checked before the user
+            // lookup so it also protects against account enumeration timing.
+            const ip = getClientIp(request);
+            const rateLimit = await checkRateLimit(
+              "login",
+              5,
+              "15 m",
+              `${ip}:${normalizedEmail}`,
+            );
+            if (!rateLimit.success) {
+              throw new RateLimitedError();
+            }
+
             const user = await prisma.user.findUnique({
-              where: { email: email.toLowerCase() },
+              where: { email: normalizedEmail },
             });
             // No user, or an OAuth-only account with no password set.
             if (!user?.password) return null;

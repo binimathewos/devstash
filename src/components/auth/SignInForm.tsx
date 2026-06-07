@@ -113,6 +113,12 @@ export function SignInForm({
         setError("Please verify your email before signing in.");
         return;
       }
+      // Surfaced from the authorize() RateLimitedError — too many attempts for
+      // this IP + email combination.
+      if (result?.code === "rate_limited") {
+        setError("Too many sign-in attempts. Please wait a few minutes and try again.");
+        return;
+      }
       setError("Invalid email or password.");
       return;
     }

@@ -3,6 +3,7 @@ import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { createAndSendVerificationToken } from "@/lib/verification";
 import { isEmailVerificationEnabled } from "@/lib/config";
+import { checkRateLimit, getClientIp, rateLimitedResponse } from "@/lib/rate-limit";
 
 // POST /api/auth/register — create a new email/password user.
 // Body: { name, email, password, confirmPassword }
@@ -12,6 +13,13 @@ const MIN_PASSWORD_LENGTH = 8;
 
 export async function POST(request: Request) {
   try {
+    const ip = getClientIp(request);
+    const rateLimit = await checkRateLimit("register", 3, "1 h", ip);
+    if (!rateLimit.success) {
+      const { error, status, headers } = rateLimitedResponse(rateLimit.reset);
+      return NextResponse.json({ success: false, error }, { status, headers });
+    }
+
     const body = await request.json().catch(() => null);
     const { name, email, password, confirmPassword } = body ?? {};
 
