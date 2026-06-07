@@ -31,6 +31,9 @@ interface SignInFormProps {
   // Status from the email-verification flow: "1" (verified), "expired",
   // "invalid", or "error".
   verified?: string;
+  // "1" after a successful registration when verification is disabled — the
+  // account is already active, so we just confirm and prompt to sign in.
+  registered?: string;
 }
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -56,6 +59,7 @@ export function SignInForm({
   callbackUrl,
   initialError,
   verified,
+  registered,
 }: SignInFormProps) {
   const router = useRouter();
   const [email, setEmail] = useState("");
@@ -68,7 +72,9 @@ export function SignInForm({
   // unverified — surfaces a resend affordance.
   const [needsVerification, setNeedsVerification] = useState(false);
 
-  const notice = verifiedNotice(verified);
+  const notice =
+    verifiedNotice(verified) ??
+    (registered === "1" ? "Account created — you can now sign in." : null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();

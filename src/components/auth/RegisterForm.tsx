@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +12,7 @@ const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MIN_PASSWORD_LENGTH = 8;
 
 export function RegisterForm() {
+  const router = useRouter();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -55,9 +57,14 @@ export function RegisterForm() {
         return;
       }
 
-      // Account created — show the "check your email" confirmation. They must
-      // verify via the emailed link before they can sign in.
-      setRegisteredEmail(email.trim().toLowerCase());
+      // When verification is disabled the account is already active — skip the
+      // "check your email" panel and send them straight to sign in. Otherwise
+      // show the confirmation; they must verify via the emailed link first.
+      if (data.data?.verificationRequired) {
+        setRegisteredEmail(email.trim().toLowerCase());
+      } else {
+        router.push("/sign-in?registered=1");
+      }
     } catch {
       setError("Something went wrong. Please try again.");
     } finally {
