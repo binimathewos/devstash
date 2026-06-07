@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import { createAndSendVerificationToken } from "@/lib/verification";
+import { isEmailVerificationEnabled } from "@/lib/config";
 
 // POST /api/auth/register — create a new email/password user.
 // Body: { name, email, password, confirmPassword }
@@ -71,31 +72,44 @@ export async function POST(request: Request) {
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
-    // Created with emailVerified = null (schema default); the user must confirm
-    // via the link before they can sign in with credentials.
+    const verificationRequired = isEmailVerificationEnabled();
+    // When verification is required, leave emailVerified null (schema default)
+    // so the user must confirm via the link before signing in. When it's
+    // disabled, activate the account immediately — no email round-trip needed.
     const user = await prisma.user.create({
       data: {
         name: trimmedName,
         email: normalizedEmail,
         password: hashedPassword,
+        emailVerified: verificationRequired ? undefined : new Date(),
       },
     });
 
-    // Send the verification email. The account already exists, so a send failure
-    // shouldn't fail registration — surface it via `emailSent` and let the user
-    // re-request the link from the "check your email" screen.
-    let emailSent = true;
-    try {
-      await createAndSendVerificationToken(user.email, user.name);
-    } catch (emailError) {
-      emailSent = false;
-      console.error("Verification email failed to send:", emailError);
+    // Send the verification email only when verification is required. The
+    // account already exists, so a send failure shouldn't fail registration —
+    // surface it via `emailSent` and let the user re-request the link from the
+    // "check your email" screen.
+    let emailSent = false;
+    if (verificationRequired) {
+      emailSent = true;
+      try {
+        await createAndSendVerificationToken(user.email, user.name);
+      } catch (emailError) {
+        emailSent = false;
+        console.error("Verification email failed to send:", emailError);
+      }
     }
 
     return NextResponse.json(
       {
         success: true,
-        data: { id: user.id, name: user.name, email: user.email, emailSent },
+        data: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          verificationRequired,
+          emailSent,
+        },
       },
       { status: 201 },
     );

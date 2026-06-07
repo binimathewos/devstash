@@ -4,6 +4,7 @@ import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import { prisma } from "@/lib/prisma";
 import authConfig from "@/auth.config";
+import { isEmailVerificationEnabled } from "@/lib/config";
 
 // Thrown when a valid password is supplied for an account that hasn't confirmed
 // its email yet. The `code` is surfaced to the client via signIn({redirect:false})
@@ -48,9 +49,19 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
             const valid = await bcrypt.compare(password, user.password);
             if (!valid) return null;
 
-            // Password is correct — only now do we reveal the unverified state,
-            // so this hint is never shown to someone who doesn't know the password.
-            if (!user.emailVerified) throw new EmailNotVerifiedError();
+            // Password is correct. Only enforce verification when the flag is on
+            // — and only now, so the unverified hint is never shown to someone
+            // who doesn't know the password. When the flag is off, backfill any
+            // still-unverified account so pre-existing users aren't locked out.
+            if (!user.emailVerified) {
+              if (isEmailVerificationEnabled()) {
+                throw new EmailNotVerifiedError();
+              }
+              await prisma.user.update({
+                where: { id: user.id },
+                data: { emailVerified: new Date() },
+              });
+            }
 
             return {
               id: user.id,
