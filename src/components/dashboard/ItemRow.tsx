@@ -16,7 +16,10 @@ export function ItemRow({ item }: ItemRowProps) {
   return (
     <Link
       href={`/items/detail/${item.id}`}
-      className="flex gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-ring"
+      className="flex gap-3 rounded-lg border border-l-2 border-border bg-card p-4 transition-colors hover:border-ring"
+      // Inline style: the type color is a per-type hex value from the DB, so
+      // it can't be expressed as a static Tailwind class.
+      style={item.typeColor ? { borderLeftColor: item.typeColor } : undefined}
     >
       <div className="flex size-8 shrink-0 items-center justify-center rounded-md bg-muted">
         {createElement(typeIcon(item.typeIcon), {
