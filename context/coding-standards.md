@@ -89,6 +89,13 @@ Example v4 configuration:
 - Return `{ success, data, error }` pattern from actions
 - Display user-friendly error messages via toast
 
+## Testing
+
+- Vitest for unit tests — run via `npm test` (or `npm run test:watch`)
+- Scope: server actions, route handlers, and utilities (`src/lib/**`) — not React components
+- Co-locate test files next to the code they cover, named `[name].test.ts`
+- Mock Prisma/external services (DB, email, Redis) rather than hitting them in unit tests
+
 ## Code Quality
 
 - No commented-out code unless specified

@@ -1,22 +1,30 @@
 # Current Feature
 
-<!-- Feature name and short description -->
+## Vitest Setup for Unit Testing
+
+Set up Vitest as the project's unit testing framework, scoped to server actions and utilities (no component testing).
 
 ## Status
 
-<!-- Not Started | In Progress | Complete -->
+Complete
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Install and configure Vitest for a Next.js 16 / TS / ESM project (node environment, `@/*` path alias resolution)
+- Add `test`/`test:watch` npm scripts
+- Cover pure utilities (e.g. `src/lib/utils.ts`, `src/lib/config.ts`, `src/lib/type-icons.ts`) and server actions/route logic going forward — not React components
+- Update `context/ai-interaction.md` workflow (and any other relevant docs) to reflect that unit testing is now available, replacing "Implement unit testing later"
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- No `"use server"` Server Actions exist yet (mutations currently go through API routes); the setup should be ready for both styles of server-side logic
+- DB-touching functions (`src/lib/db/*`, `src/lib/verification.ts`) need Prisma mocking to unit test — out of scope for the initial setup, just the framework + tests for pure utilities
 
 ## History
 
 <!-- Keep this updated. Earliest to latest -->
+
+- 2026-06-08 — Vitest Setup for Unit Testing completed on branch `feature/vitest-setup`. Installed `vitest` (devDependency) and added [vitest.config.ts](vitest.config.ts) — node environment (no jsdom/component testing), `@/*` aliased to `src/` via `resolve.alias` + `fileURLToPath`, test files matched as `src/**/*.test.ts`. Added `test` (`vitest run`) and `test:watch` (`vitest`) npm scripts. Wrote example/pattern tests for the existing pure utilities to validate the setup: [utils.test.ts](src/lib/utils.test.ts) (`cn`, `formatShortDate`, `formatLongDate`), [config.test.ts](src/lib/config.test.ts) (`isEmailVerificationEnabled`, including env-var edge cases with `afterEach` restore), and [type-icons.test.ts](src/lib/type-icons.test.ts) (`typeIcon`, `typeSlug`) — 12 tests across 3 files, all passing. **Docs**: updated the Test step in [ai-interaction.md](context/ai-interaction.md) (replaced "Implement unit testing later" with `npm test` guidance), added a **Testing** section to [coding-standards.md](context/coding-standards.md) (Vitest scope = server actions/route handlers/utilities in `src/lib/**`, not components; co-locate as `[name].test.ts`; mock Prisma/external services), and added `npm test`/`npm run test:watch` to the Commands list in [CLAUDE.md](CLAUDE.md). No tests written yet for DB-touching code (`src/lib/db/*`, `verification.ts`) or API routes — those need Prisma/Resend/Upstash mocking and were left for future features to add alongside their own logic. `npm run lint`, `npm run build`, and `npm test` all pass.
 
 - 2026-06-01 — Initial Next.js 16 + React 19 + Tailwind CSS v4 project scaffold (Create Next App). Removed default starter SVGs, updated `globals.css`, `layout.tsx`, and `page.tsx`. Added project context docs (`CLAUDE.md`, `context/`). Committed as `chore: initial next.js and tailwind setup` and pushed to `origin/main` (github.com/binimathewos/devstash).
 - 2026-06-03 — Dashboard UI Phase 1 (of 3) completed on branch `feature/dashboard-phase-1`. Initialized ShadCN (base-nova, neutral, lucide) — added `components.json`, `src/lib/utils.ts`, `button` + `input` UI components, and theme tokens in `globals.css`. Enabled dark mode by default and updated metadata in `layout.tsx`. Added `/dashboard` route with a top bar + placeholder sidebar/main layout (`src/app/dashboard/`). Built display-only `TopBar` (`src/components/dashboard/TopBar.tsx`) with centered search, DevStash logo/label on the left, and "New Collection" + "New Item" buttons on the right. `npm run build` passes.

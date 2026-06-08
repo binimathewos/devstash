@@ -17,6 +17,8 @@ Read the following to get the full context of the project:
 - `npm run build` — production build
 - `npm start` — serve the production build
 - `npm run lint` — run ESLint
+- `npm test` — run unit tests (Vitest)
+- `npm run test:watch` — run unit tests in watch mode
 
 ## Neon MCP Usage
 
