@@ -1,18 +1,22 @@
-# Current Feature
+# Current Feature: Items Grid — Three Columns on Large Screens
 
-<!-- Feature name and short description -->
+Change the item listing grid at `/items/[type]` from a 2-column max layout to 3 columns on larger screens, while staying responsive on smaller viewports.
 
 ## Status
 
-<!-- Not Started | In Progress | Complete -->
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- The items grid at `/items/[type]` shows 3 columns on large screens (currently caps at 2 via `md:grid-cols-2`)
+- Layout stays responsive: fewer columns on smaller viewports (e.g. 1 on mobile, 2 on medium, 3 on large)
+- No regressions to `ItemCard` content/spacing at the new column width
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Grid lives in [items/[type]/page.tsx:48](src/app/items/[type]/page.tsx#L48): `<div className="grid grid-cols-1 gap-4 md:grid-cols-2">`
+- Likely change: add an `lg:grid-cols-3` (or adjust breakpoints) so 3 columns kick in at the `lg` breakpoint rather than `md`
+- Pure Tailwind class change — no data layer or component prop changes expected
 
 ## History
 
