@@ -1,18 +1,29 @@
-# Current Feature
-
-<!-- Describe the feature here when starting a new one -->
+# Current Feature: Item Drawer — Edit Mode
 
 ## Status
 
-<!-- Not Started | In Progress | Complete -->
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Edit button (pencil icon) in the item drawer's action bar toggles the drawer into inline edit mode (same drawer, fields become editable)
+- In edit mode, the action bar is replaced with Save and Cancel buttons
+- Cancel discards changes and returns to view mode; Save persists via server action, returns to view mode, refreshes drawer data, and shows a toast on success/error
+- Editable for all types: Title (required text input), Description (optional textarea), Tags (comma-separated input → tag array on save)
+- Type-specific editable fields: Content (textarea — snippet/prompt/command/note), Language (text input — snippet/command), URL (text input — link)
+- Non-editable in edit mode (display only): item type, collections, created/updated dates
+- `updateItem(itemId, data)` server action in `src/actions/items.ts` — `{ success, data, error }` pattern, Zod-validated, session via `auth()`, ownership check, calls a new `updateItem` query function in `src/lib/db/items.ts`
+- Tag handling on update: disconnect all existing tags, connect-or-create new ones; returns the updated `ItemDetail` so the drawer refreshes without a second fetch
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Per `context/features/item-drawer-edit-spec.md`
+- Zod schema for the update payload: `title` (non-empty trimmed string), `description` (string|null, optional), `content` (string|null, optional), `url` (valid URL string|null, optional), `language` (string|null, optional), `tags` (array of trimmed non-empty strings) — server is the source of truth, returns Zod errors in `{ success: false, error }`
+- Keep it simple — no form library, controlled inputs with local state
+- Client-side: disable Save when title is empty (basic UX guard)
+- Content textarea doesn't need to be a code editor yet
+- After save, call `router.refresh()` so the underlying card/list reflects changes
+- No toast library currently in the codebase (the rate-limiting feature noted this and used inline alerts instead) — confirm toast approach during implementation
 
 ## History
 

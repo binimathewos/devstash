@@ -235,6 +235,57 @@ export async function getItemDetail(
   };
 }
 
+// Editable fields for an item update — title is required, the rest are
+// nullable so type-irrelevant fields (e.g. `url` on a snippet) can be cleared.
+export interface UpdateItemData {
+  title: string;
+  description: string | null;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  tags: string[];
+}
+
+// Updates an item's editable fields, scoped to its owner — returns null when
+// the item doesn't exist or belongs to someone else (mirrors getItemDetail).
+// Tags are replaced wholesale: existing ItemTag rows are deleted and new ones
+// are created, connecting to existing per-user Tags or creating them.
+export async function updateItem(
+  userId: string,
+  itemId: string,
+  data: UpdateItemData,
+): Promise<ItemDetail | null> {
+  const existing = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: { id: true },
+  });
+  if (!existing) return null;
+
+  await prisma.item.update({
+    where: { id: itemId },
+    data: {
+      title: data.title,
+      description: data.description,
+      content: data.content,
+      url: data.url,
+      language: data.language,
+      tags: {
+        deleteMany: {},
+        create: data.tags.map((name) => ({
+          tag: {
+            connectOrCreate: {
+              where: { userId_name: { userId, name } },
+              create: { userId, name },
+            },
+          },
+        })),
+      },
+    },
+  });
+
+  return getItemDetail(userId, itemId);
+}
+
 // Item counts for the dashboard stats cards.
 export async function getItemStats(userId: string): Promise<{
   total: number;
