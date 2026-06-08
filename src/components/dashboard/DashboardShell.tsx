@@ -5,6 +5,7 @@ import { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { Sidebar } from "@/components/dashboard/Sidebar";
 import { TopBar } from "@/components/dashboard/TopBar";
+import { ItemDrawerProvider } from "@/components/items/ItemDrawerProvider";
 import type { SidebarUserData } from "@/components/dashboard/SidebarUser";
 import type { SidebarItemType } from "@/lib/db/items";
 import type { SidebarCollection } from "@/lib/db/collections";
@@ -80,7 +81,9 @@ export function DashboardShell({
           />
         </aside>
 
-        <main className="flex-1 overflow-auto p-6">{children}</main>
+        <main className="flex-1 overflow-auto p-6">
+          <ItemDrawerProvider>{children}</ItemDrawerProvider>
+        </main>
       </div>
     </div>
   );

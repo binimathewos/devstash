@@ -167,6 +167,74 @@ export async function getSidebarItemTypes(
     }));
 }
 
+// Full item detail for the item drawer — everything DashboardItem has, plus
+// content/url/language, the type name, and the linked collection (if any).
+export interface ItemDetail {
+  id: string;
+  title: string;
+  description: string | null;
+  contentType: string;
+  content: string | null;
+  url: string | null;
+  language: string | null;
+  isFavorite: boolean;
+  isPinned: boolean;
+  tags: string[];
+  typeName: string; // raw type name from the DB (e.g. "snippet")
+  typeIcon: string; // lucide icon name
+  typeColor: string | null; // hex color (from ItemType.color)
+  collection: { id: string; name: string } | null;
+  createdAt: string; // ISO date (YYYY-MM-DD)
+  updatedAt: string; // ISO date (YYYY-MM-DD)
+}
+
+// Full detail for a single item, scoped to its owner — returns null when the
+// item doesn't exist or belongs to someone else, so the caller can 404.
+export async function getItemDetail(
+  userId: string,
+  itemId: string,
+): Promise<ItemDetail | null> {
+  const item = await prisma.item.findFirst({
+    where: { id: itemId, userId },
+    select: {
+      id: true,
+      title: true,
+      description: true,
+      contentType: true,
+      content: true,
+      url: true,
+      language: true,
+      isFavorite: true,
+      isPinned: true,
+      createdAt: true,
+      updatedAt: true,
+      type: { select: { name: true, icon: true, color: true } },
+      collection: { select: { id: true, name: true } },
+      tags: { select: { tag: { select: { name: true } } } },
+    },
+  });
+  if (!item) return null;
+
+  return {
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    contentType: item.contentType,
+    content: item.content,
+    url: item.url,
+    language: item.language,
+    isFavorite: item.isFavorite,
+    isPinned: item.isPinned,
+    tags: item.tags.map((t) => t.tag.name),
+    typeName: item.type.name,
+    typeIcon: item.type.icon ?? "File",
+    typeColor: item.type.color,
+    collection: item.collection,
+    createdAt: item.createdAt.toISOString().slice(0, 10),
+    updatedAt: item.updatedAt.toISOString().slice(0, 10),
+  };
+}
+
 // Item counts for the dashboard stats cards.
 export async function getItemStats(userId: string): Promise<{
   total: number;

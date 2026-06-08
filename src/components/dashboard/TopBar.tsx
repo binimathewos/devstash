@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Boxes, PanelLeft, Search } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -21,10 +22,12 @@ export function TopBar({ onToggleSidebar }: TopBarProps) {
         >
           <PanelLeft className="size-4" />
         </button>
-        <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
-          <Boxes className="size-4" />
-        </div>
-        <span className="text-base font-semibold">DevStash</span>
+        <Link href="/dashboard" className="flex items-center gap-2">
+          <div className="flex size-7 items-center justify-center rounded-md bg-primary text-primary-foreground">
+            <Boxes className="size-4" />
+          </div>
+          <span className="text-base font-semibold">DevStash</span>
+        </Link>
       </div>
 
       <div className="relative w-full max-w-xl justify-self-center">

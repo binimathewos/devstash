@@ -1,10 +1,12 @@
+"use client";
+
 import { createElement } from "react";
-import Link from "next/link";
 import { Pin, Star } from "lucide-react";
 
 import { formatShortDate } from "@/lib/utils";
 import type { DashboardItem } from "@/lib/db/items";
 import { typeIcon } from "@/lib/type-icons";
+import { useItemDrawer } from "@/components/items/ItemDrawerProvider";
 
 interface ItemCardProps {
   item: DashboardItem;
@@ -13,12 +15,15 @@ interface ItemCardProps {
 // A grid card for the /items/[type] list view: type icon, title (with
 // pin/favorite markers), description, tags, and the created date. Mirrors
 // ItemRow's left-border accent + icon coloring, laid out as a card instead
-// of a row.
+// of a row. Clicking opens the item drawer rather than navigating.
 export function ItemCard({ item }: ItemCardProps) {
+  const { openItem } = useItemDrawer();
+
   return (
-    <Link
-      href={`/items/detail/${item.id}`}
-      className="flex flex-col gap-3 rounded-lg border border-l-2 border-border bg-card p-4 transition-colors hover:border-ring"
+    <button
+      type="button"
+      onClick={() => openItem(item.id)}
+      className="flex flex-col gap-3 rounded-lg border border-l-2 border-border bg-card p-4 text-left transition-colors hover:border-ring"
       // Inline style: the type color is a per-type hex value from the DB, so
       // it can't be expressed as a static Tailwind class.
       style={item.typeColor ? { borderLeftColor: item.typeColor } : undefined}
@@ -67,6 +72,6 @@ export function ItemCard({ item }: ItemCardProps) {
           ))}
         </div>
       )}
-    </Link>
+    </button>
   );
 }

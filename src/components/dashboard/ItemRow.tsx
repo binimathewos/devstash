@@ -1,10 +1,12 @@
+"use client";
+
 import { createElement } from "react";
-import Link from "next/link";
 import { Pin, Star } from "lucide-react";
 
 import { formatShortDate } from "@/lib/utils";
 import type { DashboardItem } from "@/lib/db/items";
 import { typeIcon } from "@/lib/type-icons";
+import { useItemDrawer } from "@/components/items/ItemDrawerProvider";
 
 interface ItemRowProps {
   item: DashboardItem;
@@ -12,11 +14,15 @@ interface ItemRowProps {
 
 // A single item line used in the Pinned and Recent lists: type icon, title
 // (with pin/favorite markers), description, tags, and the created date.
+// Clicking opens the item drawer rather than navigating.
 export function ItemRow({ item }: ItemRowProps) {
+  const { openItem } = useItemDrawer();
+
   return (
-    <Link
-      href={`/items/detail/${item.id}`}
-      className="flex gap-3 rounded-lg border border-l-2 border-border bg-card p-4 transition-colors hover:border-ring"
+    <button
+      type="button"
+      onClick={() => openItem(item.id)}
+      className="flex gap-3 rounded-lg border border-l-2 border-border bg-card p-4 text-left transition-colors hover:border-ring"
       // Inline style: the type color is a per-type hex value from the DB, so
       // it can't be expressed as a static Tailwind class.
       style={item.typeColor ? { borderLeftColor: item.typeColor } : undefined}
@@ -64,6 +70,6 @@ export function ItemRow({ item }: ItemRowProps) {
       <span className="shrink-0 text-xs text-muted-foreground">
         {formatShortDate(item.createdAt)}
       </span>
-    </Link>
+    </button>
   );
 }
