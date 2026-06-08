@@ -1,18 +1,26 @@
-# Current Feature
+# Current Feature: Items List View
 
-<!-- Feature name and short description -->
+Dynamic items listing page at `/items/[type]` that displays type-filtered items.
 
 ## Status
 
-<!-- Not Started | In Progress | Complete -->
+In Progress
 
 ## Goals
 
-<!-- Bullet points of what success looks like -->
+- Create dynamic route `/items/[type]` (e.g., /items/snippets, /items/notes)
+- Fetch and display items filtered by type
+- Responsive grid of `ItemCard` components
+- Two columns on medium and up
+- Each card has a left border colored by item type
+- Follow existing codebase patterns
 
 ## Notes
 
-<!-- Additional context, constraints, or details from spec -->
+- Per `context/features/item-list-view-spec.md`.
+- The sidebar already links item types to `/items/[name]` (DB type names are singular/lowercase, e.g. `snippet`, `note`) — the dynamic segment should match that convention.
+- No `ItemCard` component exists yet; likely needs to be built following the patterns in `CollectionCard`/`ItemRow` (left-border accent via type color, hex colors via inline `style` since they're dynamic DB values).
+- Should reuse the user-scoped DB query patterns in `src/lib/db/items.ts` (e.g. `requireUserId()` + Prisma `where: { userId, type: { name } }`).
 
 ## History
 

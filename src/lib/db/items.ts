@@ -77,6 +77,39 @@ export async function getRecentItems(
   return items.map(toDashboardItem);
 }
 
+// Info about an item type, for rendering the /items/[type] page header.
+export interface ItemTypeInfo {
+  id: string;
+  name: string; // raw type name from the DB (e.g. "snippet")
+  icon: string; // lucide icon name
+  color: string | null; // hex color (from ItemType.color)
+}
+
+// The user's items of a single system type (matched by raw DB name, e.g.
+// "snippet"), newest first. Returns null when the type doesn't exist so the
+// caller can 404.
+export async function getItemsByType(
+  userId: string,
+  typeName: string,
+): Promise<{ type: ItemTypeInfo; items: DashboardItem[] } | null> {
+  const type = await prisma.itemType.findFirst({
+    where: { name: typeName, isSystem: true },
+    select: { id: true, name: true, icon: true, color: true },
+  });
+  if (!type) return null;
+
+  const items = await prisma.item.findMany({
+    where: { userId, typeId: type.id },
+    orderBy: { createdAt: "desc" },
+    select: dashboardItemSelect,
+  });
+
+  return {
+    type: { id: type.id, name: type.name, icon: type.icon ?? "File", color: type.color },
+    items: items.map(toDashboardItem),
+  };
+}
+
 // A system item type shaped for the sidebar: its icon/color plus how many of
 // the current user's items use it.
 export interface SidebarItemType {
