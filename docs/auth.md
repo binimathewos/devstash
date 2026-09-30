@@ -128,21 +128,21 @@ Do NOT implement code during /specify.
 Do NOT modify the legacy application.
 Do NOT invent missing API contracts or business rules.
 Flag unresolved questions explicitly.
-```
-Fix the existing User Directory page using the legacy screenshot as the UI reference:
 
-- Fix grid data binding for First Name, Last Name, User Type, and Phone; verify the correct fields from the existing API response rather than hardcoding/mocking values.
-- Reduce the width of Username and Email columns to make the grid more compact.
-- Add an Actions column with a context menu:
-  - Active user → Deactivate
-  - Deactivated user → Activate + Reset Password
-- Reuse the existing legacy/API behavior for these actions; do not create new backend logic.
-- In the filter header:
-  - Move Refresh next to the Filter button.
-  - Right-align Add User.
-  - Style the filter header to visually match the table header.
-- Remove the existing UserDetailPanel completely.
-- Replace the current pagination/navigation with the pagination style and behavior shown in the legacy screenshot.
-- Preserve existing filtering, API integration, authorization, selection, and business rules.
-- Keep the grid compact, responsive, and visually close to the legacy implementation.
+*************
+
+Fix the User Directory grid UI and data binding:
+
+- Replace the current Actions dropdown with a compact three-dot (⋯) menu in each row.
+- Add appropriate icons to each action:
+  - Activate
+  - Deactivate
+  - Reset Password
+- Preserve the existing rules for which actions are available based on user status.
+- Verify every grid column is correctly mapped to the actual API response.
+- Fix any incorrect/missing bindings for First Name, Last Name, Username, Email, Phone, User Type, Status, and other displayed fields.
+- Specifically investigate why Status currently shows "Deactivated" for all users; use the actual API value and legacy mapping/logic rather than a frontend default.
+- Do not hardcode, infer, or provide fallback values that hide missing API data.
+- Compare field mappings with the legacy implementation where necessary.
+- Preserve existing grid styling, filtering, pagination, and API behavior.
 
