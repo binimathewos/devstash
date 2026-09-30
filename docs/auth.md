@@ -129,18 +129,20 @@ Do NOT modify the legacy application.
 Do NOT invent missing API contracts or business rules.
 Flag unresolved questions explicitly.
 ```
-Refine the existing User Directory UI without changing functionality:
+Fix the existing User Directory page using the legacy screenshot as the UI reference:
 
-- Make the user grid more compact by reducing row height, cell padding, column gaps, and unnecessary column widths while keeping content readable.
-- Keep the grid at a fixed/available viewport height and make only the grid rows vertically scrollable; keep the header visible while scrolling.
-- Change User Details from the current view to a right-side fly-out drawer that opens when viewing/selecting a user.
-- Match the legacy grid styling as closely as practical:
-  - Green table header
-  - Light green row hover
-  - Light green selected-row state
-  - Clean, subtle borders and compact typography
-- Reduce the page title size and remove excessive spacing/margins above and below it.
-- Use the available screen space efficiently and keep the overall page clean, dense, and professional.
-- Preserve all existing filtering, sorting, selection, API integration, permissions, and business logic.
-
+- Fix grid data binding for First Name, Last Name, User Type, and Phone; verify the correct fields from the existing API response rather than hardcoding/mocking values.
+- Reduce the width of Username and Email columns to make the grid more compact.
+- Add an Actions column with a context menu:
+  - Active user → Deactivate
+  - Deactivated user → Activate + Reset Password
+- Reuse the existing legacy/API behavior for these actions; do not create new backend logic.
+- In the filter header:
+  - Move Refresh next to the Filter button.
+  - Right-align Add User.
+  - Style the filter header to visually match the table header.
+- Remove the existing UserDetailPanel completely.
+- Replace the current pagination/navigation with the pagination style and behavior shown in the legacy screenshot.
+- Preserve existing filtering, API integration, authorization, selection, and business rules.
+- Keep the grid compact, responsive, and visually close to the legacy implementation.
 
