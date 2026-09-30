@@ -131,18 +131,44 @@ Flag unresolved questions explicitly.
 
 *************
 
-Fix the User Directory grid UI and data binding:
+Review the existing User Management implementation against the legacy ASP.NET application and the provided legacy screenshots.
 
-- Replace the current Actions dropdown with a compact three-dot (⋯) menu in each row.
-- Add appropriate icons to each action:
-  - Activate
-  - Deactivate
-  - Reset Password
-- Preserve the existing rules for which actions are available based on user status.
-- Verify every grid column is correctly mapped to the actual API response.
-- Fix any incorrect/missing bindings for First Name, Last Name, Username, Email, Phone, User Type, Status, and other displayed fields.
-- Specifically investigate why Status currently shows "Deactivated" for all users; use the actual API value and legacy mapping/logic rather than a frontend default.
-- Do not hardcode, infer, or provide fallback values that hide missing API data.
-- Compare field mappings with the legacy implementation where necessary.
-- Preserve existing grid styling, filtering, pagination, and API behavior.
+Focus only on these already-implemented features:
+- Add User
+- Activate / Deactivate User
+- Reset Password
+
+For each feature:
+
+1. Trace the corresponding legacy implementation end-to-end:
+   Legacy UI → Controller/Service → API call → Request/Response → Validation → Result/Error handling.
+
+2. Compare the current React implementation with the verified legacy behavior:
+   - Fields and labels
+   - Required/optional fields
+   - Default values
+   - Validation rules/messages
+   - API endpoint and HTTP method
+   - Request payload/query parameters
+   - Response handling
+   - Authentication/Bearer token usage
+   - Authorization/permissions
+   - Confirmation dialogs
+   - Success/error messages
+   - Grid refresh/update behavior
+   - Enable/disable rules and status transitions
+
+3. Use the provided screenshots as the visual/UX reference and keep the React implementation as close as practical, allowing only minor modern UI improvements.
+
+4. Fix any differences found in the React implementation.
+
+Important:
+- Legacy ASP.NET code is READ-ONLY and the source of truth for behavior.
+- Existing backend APIs must be reused exactly.
+- Do not create or modify backend APIs.
+- Do not invent missing behavior or API contracts.
+- Do not rewrite working code unnecessarily.
+- Preserve the existing React architecture and shared authenticated API client.
+
+Before making changes, report the discrepancies found for each feature. Then make only the changes required to achieve legacy behavior/API parity.
 
