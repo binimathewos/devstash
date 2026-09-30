@@ -129,3 +129,18 @@ Do NOT modify the legacy application.
 Do NOT invent missing API contracts or business rules.
 Flag unresolved questions explicitly.
 ```
+Refine the existing User Directory UI without changing functionality:
+
+- Make the user grid more compact by reducing row height, cell padding, column gaps, and unnecessary column widths while keeping content readable.
+- Keep the grid at a fixed/available viewport height and make only the grid rows vertically scrollable; keep the header visible while scrolling.
+- Change User Details from the current view to a right-side fly-out drawer that opens when viewing/selecting a user.
+- Match the legacy grid styling as closely as practical:
+  - Green table header
+  - Light green row hover
+  - Light green selected-row state
+  - Clean, subtle borders and compact typography
+- Reduce the page title size and remove excessive spacing/margins above and below it.
+- Use the available screen space efficiently and keep the overall page clean, dense, and professional.
+- Preserve all existing filtering, sorting, selection, API integration, permissions, and business logic.
+
+
