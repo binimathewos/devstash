@@ -130,14 +130,11 @@ Do NOT invent missing API contracts or business rules.
 Flag unresolved questions explicitly.
 
 *************
+Replace the three-dot/context menu in the User Directory `Action` column with inline actions:
 
-Fix the following UI/state issues across the app:
-
-- Show the existing/shared Loading component whenever API data is being fetched.
-- For data grids, keep the grid/container at its normal fixed height while loading or when data is empty; do not collapse the grid.
-- While loading, show a centered loading spinner/component inside the grid content area.
-- When loading completes with no results, show the existing empty-state message in the same grid area.
-- Ensure loading behavior is consistent for initial loads, refreshes, filters, and other data-fetch operations.
-- Fix the User Directory filtered-result Actions menu: after applying a filter, deactivated users must still show the `Reset Password` action along with the appropriate `Activate` action.
-- Ensure filtered and unfiltered results use the same row-action logic/component; do not duplicate or alter permission/status rules.
-- Preserve existing API behavior, grid styling, filtering, pagination, and business logic.
+- Active user → show `Deactivate`
+- Inactive user → show `Activate | Reset Password`
+- Add appropriate icons to each action.
+- Keep actions compact, clearly separated, and vertically centered in the Action column.
+- Preserve the existing confirmation dialogs, API calls, permissions, status logic, and refresh behavior.
+- Ensure the same actions remain available after filtering, sorting, pagination, or refreshing the grid.
