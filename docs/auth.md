@@ -131,44 +131,13 @@ Flag unresolved questions explicitly.
 
 *************
 
-Review the existing User Management implementation against the legacy ASP.NET application and the provided legacy screenshots.
+Fix the following UI/state issues across the app:
 
-Focus only on these already-implemented features:
-- Add User
-- Activate / Deactivate User
-- Reset Password
-
-For each feature:
-
-1. Trace the corresponding legacy implementation end-to-end:
-   Legacy UI → Controller/Service → API call → Request/Response → Validation → Result/Error handling.
-
-2. Compare the current React implementation with the verified legacy behavior:
-   - Fields and labels
-   - Required/optional fields
-   - Default values
-   - Validation rules/messages
-   - API endpoint and HTTP method
-   - Request payload/query parameters
-   - Response handling
-   - Authentication/Bearer token usage
-   - Authorization/permissions
-   - Confirmation dialogs
-   - Success/error messages
-   - Grid refresh/update behavior
-   - Enable/disable rules and status transitions
-
-3. Use the provided screenshots as the visual/UX reference and keep the React implementation as close as practical, allowing only minor modern UI improvements.
-
-4. Fix any differences found in the React implementation.
-
-Important:
-- Legacy ASP.NET code is READ-ONLY and the source of truth for behavior.
-- Existing backend APIs must be reused exactly.
-- Do not create or modify backend APIs.
-- Do not invent missing behavior or API contracts.
-- Do not rewrite working code unnecessarily.
-- Preserve the existing React architecture and shared authenticated API client.
-
-Before making changes, report the discrepancies found for each feature. Then make only the changes required to achieve legacy behavior/API parity.
-
+- Show the existing/shared Loading component whenever API data is being fetched.
+- For data grids, keep the grid/container at its normal fixed height while loading or when data is empty; do not collapse the grid.
+- While loading, show a centered loading spinner/component inside the grid content area.
+- When loading completes with no results, show the existing empty-state message in the same grid area.
+- Ensure loading behavior is consistent for initial loads, refreshes, filters, and other data-fetch operations.
+- Fix the User Directory filtered-result Actions menu: after applying a filter, deactivated users must still show the `Reset Password` action along with the appropriate `Activate` action.
+- Ensure filtered and unfiltered results use the same row-action logic/component; do not duplicate or alter permission/status rules.
+- Preserve existing API behavior, grid styling, filtering, pagination, and business logic.
