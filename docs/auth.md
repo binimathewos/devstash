@@ -1,23 +1,21 @@
-Based on your analysis of the existing solution, create `.github/copilot-instructions.md`.
+I want to add a new REST API feature to the existing ASP.NET Core Web API solution.
 
-Include:
-- Existing architecture and coding conventions
-- Controller, service, and repository patterns
-- DTOs, entities, mapping, and validation conventions
-- Database access and migration practices
-- Authentication and authorization requirements
-- Exception handling, logging, and testing standards
+Feature: [Feature Name]
 
-Rules:
-- Existing code is the source of truth.
-- Reuse existing components, utilities, and dependencies.
-- Follow established naming and folder structures.
-- Do not introduce new architectural patterns or libraries without justification.
-- Preserve backward compatibility.
-- Implement new APIs as complete, testable vertical slices.
-- Do not modify unrelated functionality.
+Requirements:
+[Describe the endpoints, data fields, business rules, and expected behavior.]
 
-Keep instructions concise, specific, and maintainable.
+Before implementing:
+1. Examine similar existing features and reuse their patterns.
+2. Identify required changes to controllers, services, repositories, DTOs, entities, and database schema.
+3. Define request validation, authorization, response codes, and error handling.
+4. Identify required unit and integration tests.
+5. Break the implementation into small vertical slices.
+6. Provide a file-by-file implementation plan.
+
+Follow `.github/copilot-instructions.md`.
+
+Do not modify code yet. Wait for my approval of the plan.
 
 ```text
 /speckit.specify Implement [FEATURE/PAGE NAME] in the new React + Vite + TypeScript application as a focused vertical slice.
