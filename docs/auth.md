@@ -1,3 +1,24 @@
+Based on your analysis of the existing solution, create `.github/copilot-instructions.md`.
+
+Include:
+- Existing architecture and coding conventions
+- Controller, service, and repository patterns
+- DTOs, entities, mapping, and validation conventions
+- Database access and migration practices
+- Authentication and authorization requirements
+- Exception handling, logging, and testing standards
+
+Rules:
+- Existing code is the source of truth.
+- Reuse existing components, utilities, and dependencies.
+- Follow established naming and folder structures.
+- Do not introduce new architectural patterns or libraries without justification.
+- Preserve backward compatibility.
+- Implement new APIs as complete, testable vertical slices.
+- Do not modify unrelated functionality.
+
+Keep instructions concise, specific, and maintainable.
+
 ```text
 /speckit.specify Implement [FEATURE/PAGE NAME] in the new React + Vite + TypeScript application as a focused vertical slice.
 
